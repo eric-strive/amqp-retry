@@ -1,0 +1,47 @@
+{
+  "name": "eric-strive/amqp-retry",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "php",
+    "hyperf",
+    "amqp",
+    "swoole"
+  ],
+  "description": "ampq to retry",
+  "autoload": {
+    "psr-4": {
+      "Eric\\AmqpRetry\\": "src/"
+    },
+    "files": [
+      "./src/Helper/helper.php"
+    ]
+  },
+  "require": {
+    "php": ">=7.2",
+    "ext-swoole": ">=4.4",
+    "hyperf/http-message": "~2.0.0",
+    "hyperf/config": "~2.0.0",
+    "hyperf/di": "~2.0.1",
+    "hyperf/framework": "~2.0.0",
+    "hyperf/utils": "~2.0.0",
+    "hyperf/amqp": "~2.0.0"
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "scripts": {
+    "test": "co-phpunit -c phpunit.xml --colors=always",
+    "analyse": "phpstan analyse --memory-limit 1024M -l 0 ./src",
+    "cs-fix": "php-cs-fixer fix $1"
+  },
+  "minimum-stability": "stable",
+  "extra": {
+    "hyperf": {
+      "config": "Eric\\AmqpRetry\\ConfigProvider"
+    },
+    "branch-alias":{
+      "dev-master":"1.0.x-dev"
+    }
+  }
+}
