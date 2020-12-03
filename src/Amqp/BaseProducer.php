@@ -21,11 +21,14 @@ abstract class BaseProducer extends ProducerMessage
 
     protected $argments = [];
 
-    public function __construct($data, string $key = null, int $delay = 0, $poolName = null)
+    public function __construct($data, string $key, int $delay = 0, $poolName = null)
     {
         // 设置不同 pool
         $this->poolName = $poolName ?? 'default';
 
+        if(empty($key)){
+            throw new MessageException('队列Key不能为空');
+        }
         $this->payload                           = [
             'key'            => $key,
             'product_system' => config('app_name'),
