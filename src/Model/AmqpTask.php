@@ -52,9 +52,12 @@ class AmqpTask extends Model
         return self::query()->where('key', $key)->first();
     }
 
-    public static function getTasks($exchange = null, $routingKey = null): \Hyperf\Database\Model\Builder
+    public static function getTasks($key, $exchange, $routingKey = null): \Hyperf\Database\Model\Builder
     {
         $query = self::query()->whereIn('status', [AmqpRetry::TASK_STATUS_ERROR, AmqpRetry::TASK_STATUS_TERMINATED]);
+        if (!empty($key)) {
+            $query->where('key', $key);
+        }
         if (!empty($exchange)) {
             $query->where('exchange', $exchange);
         }

@@ -37,6 +37,7 @@ class AmqpRetryCommand extends HyperfCommand
     protected function getArguments()
     {
         return [
+            ['key', InputArgument::OPTIONAL, '重试的唯一key'],
             ['exchange', InputArgument::OPTIONAL, '重试的交换器名称'],
             ['routing_key', InputArgument::OPTIONAL, '重试的路由键名称'],
         ];
@@ -44,10 +45,11 @@ class AmqpRetryCommand extends HyperfCommand
 
     public function handle()
     {
+        $key        = $this->input->getArgument('key');
         $exchange   = $this->input->getArgument('exchange');
         $routingKey = $this->input->getArgument('routing_key');
         $parallel   = new Parallel();
-        AmqpTask::getTasks($exchange, $routingKey)->orderBy('id')->chunk(100, function ($tasks) use ($parallel) {
+        AmqpTask::getTasks($key, $exchange, $routingKey)->orderBy('id')->chunk(100, function ($tasks) use ($parallel) {
             /**
              * @var $task \Eric\AmqpRetry\Model\AmqpTask
              */
