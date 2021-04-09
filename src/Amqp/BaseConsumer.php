@@ -23,7 +23,7 @@ use Eric\AmqpRetry\Amqp\Producer\DelayProducer;
  */
 abstract class BaseConsumer extends ConsumerMessage
 {
-    public    $qos  = ['prefetch_count' => 5000, 'prefetch_size' => null];
+    public    $qos  = ['prefetch_count' => 10000, 'prefetch_size' => null];
     protected $type = 'x-delayed-message';
 
     protected $delayType = "fanout";
@@ -61,12 +61,15 @@ abstract class BaseConsumer extends ConsumerMessage
     public function consumeMessage($amqpData, AMQPMessage $message): string
     {
         $redisLock = new AmqpLock();
-        $key = $amqpData['key'];
+        $key       = $amqpData['key'];
         $redisLock->precautionConcurrency($key, function () use ($amqpData) {
             $this->beforeConsume($amqpData);
             try {
                 $data   = Db::transaction(function () {
                     $task = Context::get(AmqpRetry::CONTEXT_TASK_DB_OBJ_KEY);
+                    if (empty($task)) {//防止task表操作失败
+                        return Result::ACK;
+                    }
                     if ($task->status === AmqpRetry::TASK_STATUS_SUCCESS) {
                         return Result::ACK;
                     }
@@ -96,13 +99,16 @@ abstract class BaseConsumer extends ConsumerMessage
      *
      * @param $result
      */
-    private function afterConsume($result): void
+    private function afterConsume($result)
     {
         try {
             /**
              * @var $taskModel \Eric\AmqpRetry\Model\AmqpTask
              */
-            $task         = Context::get(AmqpRetry::CONTEXT_TASK_DB_OBJ_KEY);
+            $task = Context::get(AmqpRetry::CONTEXT_TASK_DB_OBJ_KEY);
+            if (empty($task)) {
+                return false;
+            }
             $task->status = $result['code'] === AmqpRetry::AMQP_NO_ERROR_CODE ? AmqpRetry::TASK_STATUS_SUCCESS : AmqpRetry::TASK_STATUS_ERROR;
             if ($task->retry_times >= config('amqp_retry.retry_times')) {
                 $task->status = AmqpRetry::TASK_STATUS_TERMINATED;
