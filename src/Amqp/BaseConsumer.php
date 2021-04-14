@@ -65,18 +65,15 @@ abstract class BaseConsumer extends ConsumerMessage
         $redisLock->precautionConcurrency($key, function () use ($amqpData) {
             $this->beforeConsume($amqpData);
             try {
-                $data   = Db::transaction(function () {
-                    $task = Context::get(AmqpRetry::CONTEXT_TASK_DB_OBJ_KEY);
-                    if (empty($task)) {//防止task表操作失败
-                        return Result::ACK;
-                    }
-                    if ($task->status === AmqpRetry::TASK_STATUS_SUCCESS) {
-                        return Result::ACK;
-                    }
-                    $requestData = json_decode($task->request_data, true);
-
-                    return $this->consume($requestData);
-                });
+                $task = Context::get(AmqpRetry::CONTEXT_TASK_DB_OBJ_KEY);
+                if (empty($task)) {//防止task表操作失败
+                    return Result::ACK;
+                }
+                if ($task->status === AmqpRetry::TASK_STATUS_SUCCESS) {
+                    return Result::ACK;
+                }
+                $requestData = json_decode($task->request_data, true);
+                $data   = $this->consume($requestData);
                 $result = [
                     'code'    => AmqpRetry::AMQP_NO_ERROR_CODE,
                     'message' => 'consume success',
