@@ -23,7 +23,7 @@ use Eric\AmqpRetry\Amqp\Producer\DelayProducer;
  */
 abstract class BaseConsumer extends ConsumerMessage
 {
-    public    $qos  = ['prefetch_count' => 10000, 'prefetch_size' => null];
+    public    $qos  = ['prefetch_count' => 1000, 'prefetch_size' => null];
     protected $type = 'x-delayed-message';
 
     protected $delayType = "fanout";

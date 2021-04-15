@@ -10,20 +10,21 @@ use Hyperf\Utils\ApplicationContext;
  * $key：该消息唯一标识
  */
 if (!function_exists('amqpProducer')) {
-    function amqpProducer($producerClass,$data,$key)
+    function amqpProducer($producerClass, $data, $key)
     {
-        if(!class_exists($producerClass)){
+        if (!class_exists($producerClass)) {
             throw new MessageException('对象不存在');
         }
-        $obj      = new $producerClass($data,$key);
+        $obj      = new $producerClass($data, $key);
         $producer = ApplicationContext::getContainer()->get(\Hyperf\Amqp\Producer::class);
-        $producer->produce($obj);
+
+        return $producer->produce($obj);
     }
 }
 
 if (!function_exists('getUUID')) {
     function getUUID($prefix = '')
     {
-        return $prefix . '_' . uniqid(date('YmdHis'),false);
+        return $prefix . '_' . uniqid(date('YmdHis'), false);
     }
 }
